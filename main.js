@@ -2,6 +2,7 @@ import './style.css'
 import createBlagueBot from "./bots/BlagueBot.js"
 import createMeteoBot from "./bots/MeteoBot.js"
 import {loadMessageHistory, saveMessageToLocalStorage} from "./localStorageUtils.js"
+import createCryptoBot from "./bots/CryptoBot.js";
 
 let BOTS = []
 
@@ -72,6 +73,7 @@ function registerBot(bot) {
 
 registerBot(createBlagueBot())
 registerBot(createMeteoBot())
+registerBot(createCryptoBot())
 
 const handleUserMessage = () => {
     const input = document.querySelector('.chat-input input')
