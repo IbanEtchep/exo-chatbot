@@ -1,7 +1,7 @@
 import './style.css'
-import createBlagueBot from "./bots/BlagueBot.js";
-import createMeteoBot from "./bots/MeteoBot.js";
-import {loadMessageHistory, saveMessageToLocalStorage} from "./localStorageUtils.js";
+import createBlagueBot from "./bots/BlagueBot.js"
+import createMeteoBot from "./bots/MeteoBot.js"
+import {loadMessageHistory, saveMessageToLocalStorage} from "./localStorageUtils.js"
 
 let BOTS = []
 
@@ -28,46 +28,46 @@ function scrollToBottom() {
 }
 
 function createElement(parent, tag, className, text = '', attributes = []) {
-    const element = document.createElement(tag);
-    element.className = className;
-    element.innerHTML = text;
+    const element = document.createElement(tag)
+    element.className = className
+    element.innerHTML = text
 
     attributes.forEach(attr => {
-        element.setAttribute(attr.name, attr.value);
-    });
+        element.setAttribute(attr.name, attr.value)
+    })
 
-    parent.appendChild(element);
-    return element;
+    parent.appendChild(element)
+    return element
 }
 
 const renderMessage = (message) => {
-    const chatMessages = document.querySelector('.chat-messages');
-    const messageContainer = createElement(chatMessages, 'div', `chat-message ${message.sender === 'me' ? 'right' : 'left'}`);
+    const chatMessages = document.querySelector('.chat-messages')
+    const messageContainer = createElement(chatMessages, 'div', `chat-message ${message.sender === 'me' ? 'right' : 'left'}`)
 
     if (message.sender !== 'me') {
         createElement(messageContainer, 'img', 'chatbot-icon', 'chatbot-icon', [
             {name: 'alt', value: 'chatbot-icon'},
             {name: 'src', value: `https://robohash.org/${message.sender}.png`}
-        ]);
+        ])
     }
 
-    const textContainer = createElement(messageContainer, 'div', 'chat-text-container');
-    createElement(textContainer, 'div', 'chat-text', message.text);
-    createElement(textContainer, 'div', 'chat-date', message.datetime.toLocaleString());
+    const textContainer = createElement(messageContainer, 'div', 'chat-text-container')
+    createElement(textContainer, 'div', 'chat-text', message.text)
+    createElement(textContainer, 'div', 'chat-date', message.datetime.toLocaleString())
 
-    scrollToBottom();
-};
+    scrollToBottom()
+}
 
 function registerBot(bot) {
-    BOTS = [...BOTS, bot];
+    BOTS = [...BOTS, bot]
 
-    const chatSidebar = document.querySelector('.chat-sidebar');
-    const botContainer = createElement(chatSidebar, 'div', 'chatbot');
+    const chatSidebar = document.querySelector('.chat-sidebar')
+    const botContainer = createElement(chatSidebar, 'div', 'chatbot')
     createElement(botContainer, 'img', 'chatbot-icon', bot.icon, [
         {name: 'alt', value: bot.name},
         {name: 'src', value: `https://robohash.org/${bot.name}.png`}
-    ]);
-    createElement(botContainer, 'span', 'chatbot-name', bot.name);
+    ])
+    createElement(botContainer, 'span', 'chatbot-name', bot.name)
 }
 
 registerBot(createBlagueBot())
@@ -106,19 +106,19 @@ export const createMessage = (text, datetime = new Date(), sender = 'me') => {
         text,
         datetime,
         sender,
-    };
+    }
 
-    saveMessageToLocalStorage(message); // Save the message to local storage when it's created
-    return message;
-};
+    saveMessageToLocalStorage(message) // Save the message to local storage when it's created
+    return message
+}
 
 
 const loadMessagesFromLocalStorage = () => {
-    const history = loadMessageHistory();
+    const history = loadMessageHistory()
     history.forEach((message) => {
-        renderMessage(message);
-    });
-};
+        renderMessage(message)
+    })
+}
 
 document.addEventListener('DOMContentLoaded', loadMessagesFromLocalStorage)
 document.querySelector('.chat-input button').addEventListener('click', handleUserMessage)
@@ -130,8 +130,8 @@ document.querySelector('.chat-input input').addEventListener('keypress', (event)
 
 document.querySelectorAll('.chatbot').forEach((botElement) => {
     botElement.addEventListener('click', () => {
-        const botName = botElement.querySelector('.chatbot-name').textContent;
-        const bot = BOTS.find(bot => bot.name === botName);
-        renderMessage(createMessage(bot.help(), new Date(), bot.name));
+        const botName = botElement.querySelector('.chatbot-name').textContent
+        const bot = BOTS.find(bot => bot.name === botName)
+        renderMessage(createMessage(bot.help(), new Date(), bot.name))
     })
 })

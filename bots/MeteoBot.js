@@ -1,4 +1,4 @@
-import createBot from './createBot';
+import createBot from './createBot'
 
 const getGeolocation = () => {
     return new Promise((resolve, reject) => {
@@ -8,30 +8,30 @@ const getGeolocation = () => {
                     resolve({
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
-                    });
+                    })
                 },
                 error => {
-                    reject('Impossible d\'obtenir la géolocalisation.');
+                    reject('Impossible d\'obtenir la géolocalisation.')
                 }
-            );
+            )
         } else {
-            reject('La géolocalisation n\'est pas supportée par ce navigateur.');
+            reject('La géolocalisation n\'est pas supportée par ce navigateur.')
         }
-    });
-};
+    })
+}
 
 const getWeatherData = async (latitude, longitude) => {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
 
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Erreur lors de la récupération des données météo.');
-        const data = await response.json();
-        return data.current_weather;
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Erreur lors de la récupération des données météo.')
+        const data = await response.json()
+        return data.current_weather
     } catch (error) {
-        throw new Error('Impossible d\'obtenir les données météo.');
+        throw new Error('Impossible d\'obtenir les données météo.')
     }
-};
+}
 
 const getWeatherDescription = (weathercode) => {
     const weatherConditions = {
@@ -63,39 +63,39 @@ const getWeatherDescription = (weathercode) => {
         95: 'Orages',
         96: 'Orages avec grêle légère',
         99: 'Orages avec grêle forte'
-    };
+    }
 
-    return weatherConditions[weathercode] || 'Condition météorologique inconnue';
-};
+    return weatherConditions[weathercode] || 'Condition météorologique inconnue'
+}
 
 const generateCurrentWeatherReportHtml = (currentWeather) => {
-    const { temperature, weathercode, windspeed, winddirection, time } = currentWeather;
+    const { temperature, weathercode, windspeed, winddirection, time } = currentWeather
 
-    const date = new Date(time);
-    const weatherDescription = getWeatherDescription(weathercode);
+    const date = new Date(time)
+    const weatherDescription = getWeatherDescription(weathercode)
 
-    let report = `<h2>Météo actuelle</h2>`;
-    report += `<strong>Température:</strong> ${temperature} °C <br>`;
-    report += `<strong>Condition:</strong> ${weatherDescription} <br>`;
-    report += `<strong>Vitesse du vent:</strong> ${windspeed} km/h <br>`;
-    report += `<strong>Direction du vent:</strong> ${winddirection}° <br>`;
+    let report = `<h2>Météo actuelle</h2>`
+    report += `<strong>Température:</strong> ${temperature} °C <br>`
+    report += `<strong>Condition:</strong> ${weatherDescription} <br>`
+    report += `<strong>Vitesse du vent:</strong> ${windspeed} km/h <br>`
+    report += `<strong>Direction du vent:</strong> ${winddirection}° <br>`
 
-    return report;
-};
+    return report
+}
 
 const createMeteoBot = () => {
-    const bot = createBot('MeteoBot');
+    const bot = createBot('MeteoBot')
     bot.addCommand('meteo', 'Obtenir la météo actuelle où vous vous trouvez', async () => {
         try {
-            const { latitude, longitude } = await getGeolocation();
-            const currentWeather = await getWeatherData(latitude, longitude);
-            return generateCurrentWeatherReportHtml(currentWeather);
+            const { latitude, longitude } = await getGeolocation()
+            const currentWeather = await getWeatherData(latitude, longitude)
+            return generateCurrentWeatherReportHtml(currentWeather)
         } catch (error) {
-            return `<p style="color:red">${error.message}</p>`;
+            return `<p style="color:red">${error.message}</p>`
         }
-    });
+    })
 
-    return bot;
-};
+    return bot
+}
 
-export default createMeteoBot;
+export default createMeteoBot
