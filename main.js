@@ -1,42 +1,65 @@
 import './style.css'
-import createBlagueBot from "./bots/BlagueBot.js"
-import createMeteoBot from "./bots/MeteoBot.js"
-import {loadMessageHistory, saveMessageToLocalStorage} from "./localStorageUtils.js"
-import createCryptoBot from "./bots/CryptoBot.js";
+import createJokeBot from "./bots/JokeBot.js"
+import createWeatherBot from "./bots/WeatherBot.js"
+import createCryptoBot from "./bots/CryptoBot.js"
+import { loadMessageHistory, saveMessageToLocalStorage } from "./localStorageUtils.js"
 
 let BOTS = []
 
-document.querySelector('#app').innerHTML = `
-<div class="chat-container">
-  <div class="chat-sidebar">
-    <div class="chat-header">
-    <h1>Chatbot</h1>
-  </div>
-</div>
-  <div class="chat-main">
-    <div class="chat-messages"></div>
-    <div class="chat-input">
-      <input type="text" placeholder="Que voulez-vous faire? (tapez help pour recevoir de l'aide)" />
-      <button>Envoyer</button>
-    </div>
-  </div>
-</div>
-`
-
-function scrollToBottom() {
-    const chatMessages = document.querySelector('.chat-messages')
-    chatMessages.scrollTop = chatMessages.scrollHeight
+const initApp = () => {
+    configureUI()
+    registerBots()
+    addEventListeners()
+    loadMessageHistory().forEach(message => renderMessage(message))
 }
 
-function createElement(parent, tag, className, text = '', attributes = []) {
+const configureUI = () => {
+    document.querySelector('#app').innerHTML = `
+        <div class="chat-container">
+            <div class="chat-sidebar">
+                <div class="chat-header">
+                    <h1>Chatbot</h1>
+                </div>
+            </div>
+            <div class="chat-main">
+                <div class="chat-messages"></div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Que voulez-vous faire? (tapez help pour recevoir de l'aide)" />
+                    <button>Envoyer</button>
+                </div>
+            </div>
+        </div>
+    `
+}
+
+const registerBots = () => {
+    registerBot(createJokeBot())
+    registerBot(createWeatherBot())
+    registerBot(createCryptoBot())
+}
+
+const addEventListeners = () => {
+    document.querySelector('.chat-input button').addEventListener('click', handleUserMessage)
+    document.querySelector('.chat-input input').addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') handleUserMessage()
+    })
+}
+
+const registerBot = (bot) => {
+    BOTS = [...BOTS, bot]
+    const chatSidebar = document.querySelector('.chat-sidebar')
+    const botContainer = createElement(chatSidebar, 'div', 'chatbot')
+    createElement(botContainer, 'img', 'chatbot-icon', '', [{ name: 'alt', value: bot.name }, { name: 'src', value: `https://robohash.org/${bot.name}.png` }])
+    createElement(botContainer, 'span', 'chatbot-name', bot.name)
+
+    botContainer.addEventListener('click', () => renderMessage(createMessage(bot.help(), new Date(), bot.name)))
+}
+
+const createElement = (parent, tag, className, text = '', attributes = []) => {
     const element = document.createElement(tag)
     element.className = className
     element.innerHTML = text
-
-    attributes.forEach(attr => {
-        element.setAttribute(attr.name, attr.value)
-    })
-
+    attributes.forEach(attr => element.setAttribute(attr.name, attr.value))
     parent.appendChild(element)
     return element
 }
@@ -46,10 +69,7 @@ const renderMessage = (message) => {
     const messageContainer = createElement(chatMessages, 'div', `chat-message ${message.sender === 'me' ? 'right' : 'left'}`)
 
     if (message.sender !== 'me') {
-        createElement(messageContainer, 'img', 'chatbot-icon', 'chatbot-icon', [
-            {name: 'alt', value: 'chatbot-icon'},
-            {name: 'src', value: `https://robohash.org/${message.sender}.png`}
-        ])
+        createElement(messageContainer, 'img', 'chatbot-icon', '', [{ name: 'alt', value: 'chatbot-icon' }, { name: 'src', value: `https://robohash.org/${message.sender}.png` }])
     }
 
     const textContainer = createElement(messageContainer, 'div', 'chat-text-container')
@@ -59,41 +79,35 @@ const renderMessage = (message) => {
     scrollToBottom()
 }
 
-function registerBot(bot) {
-    BOTS = [...BOTS, bot]
-
-    const chatSidebar = document.querySelector('.chat-sidebar')
-    const botContainer = createElement(chatSidebar, 'div', 'chatbot')
-    createElement(botContainer, 'img', 'chatbot-icon', bot.icon, [
-        {name: 'alt', value: bot.name},
-        {name: 'src', value: `https://robohash.org/${bot.name}.png`}
-    ])
-    createElement(botContainer, 'span', 'chatbot-name', bot.name)
+const scrollToBottom = () => {
+    const chatMessages = document.querySelector('.chat-messages')
+    chatMessages.scrollTop = chatMessages.scrollHeight
 }
 
-registerBot(createBlagueBot())
-registerBot(createMeteoBot())
-registerBot(createCryptoBot())
+const createMessage = (text, datetime = new Date(), sender = 'me') => {
+    const message = { text, datetime, sender }
+    saveMessageToLocalStorage(message)
+    return message
+}
 
 const handleUserMessage = () => {
     const input = document.querySelector('.chat-input input')
+    const command = input.value.trim()
 
-    if(input.value === 'help') {
+    if (!command) return
+
+    renderMessage(createMessage(command))
+
+    if (command === 'help') {
         BOTS.forEach(bot => {
             renderMessage(createMessage(bot.help(), new Date(), bot.name))
         })
-        return
-    }
-
-    const command = input.value.trim()
-    if (command) {
-        const userMessage = createMessage(command)
-        renderMessage(userMessage)
+    } else {
         BOTS.forEach(bot => {
             executeCommand(bot, command)
         })
-        input.value = ''
     }
+    input.value = ''
 }
 
 const executeCommand = async (bot, command) => {
@@ -103,37 +117,4 @@ const executeCommand = async (bot, command) => {
     }
 }
 
-export const createMessage = (text, datetime = new Date(), sender = 'me') => {
-    const message = {
-        text,
-        datetime,
-        sender,
-    }
-
-    saveMessageToLocalStorage(message) // Save the message to local storage when it's created
-    return message
-}
-
-
-const loadMessagesFromLocalStorage = () => {
-    const history = loadMessageHistory()
-    history.forEach((message) => {
-        renderMessage(message)
-    })
-}
-
-document.addEventListener('DOMContentLoaded', loadMessagesFromLocalStorage)
-document.querySelector('.chat-input button').addEventListener('click', handleUserMessage)
-document.querySelector('.chat-input input').addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-        handleUserMessage()
-    }
-})
-
-document.querySelectorAll('.chatbot').forEach((botElement) => {
-    botElement.addEventListener('click', () => {
-        const botName = botElement.querySelector('.chatbot-name').textContent
-        const bot = BOTS.find(bot => bot.name === botName)
-        renderMessage(createMessage(bot.help(), new Date(), bot.name))
-    })
-})
+document.addEventListener('DOMContentLoaded', initApp)
