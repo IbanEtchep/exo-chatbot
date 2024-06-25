@@ -8,8 +8,8 @@ class Message {
         return this.text;
     }
 
-    getDatetime() {
-        return this.datetime;
+    getFormattedDatetime() {
+        return this.datetime.toLocaleString();
     }
 }
 

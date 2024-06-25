@@ -1,5 +1,6 @@
 import './style.css'
 import Message from "./model/Message.js";
+import Chatbot from "./model/Chatbot.js";
 
 /**
  * Utilisation fonction pure, récursive, d'ordre supérieur, map filter reduce
@@ -13,6 +14,8 @@ import Message from "./model/Message.js";
  *
  * Stocker l'histoire des commandes et réponses dans le local storage
  */
+
+let BOTS = []
 
 document.querySelector('#app').innerHTML = `
 <div class="chat-container">
@@ -31,30 +34,88 @@ document.querySelector('#app').innerHTML = `
 </div>
 `
 
-function createElement(tag, className, text = '', attribute = []) {
-    const element = document.createElement(tag)
-    element.className = className
-    element.textContent = text
-
-    for (let i = 0; i < attribute.length; i++) {
-        element.setAttribute(attribute[i].name, attribute[i].value)
-    }
-
-    return element
-}
-
-function addMessage(message, position) {
+function scrollToBottom() {
     const chatMessages = document.querySelector('.chat-messages')
-    const messageContainer = createElement('div', `chat-message ${position}`)
-    chatMessages.appendChild(messageContainer)
-    const textContainer = createElement('div', 'chat-text', message.getText())
-    messageContainer.appendChild(textContainer)
-    let dateFormatted = message.getDatetime().toLocaleString()
-    const dateContainer = createElement('div', 'chat-date', dateFormatted)
-    messageContainer.appendChild(dateContainer)
+    chatMessages.scrollTop = chatMessages.scrollHeight
 }
 
-addMessage(new Message('Hello'), 'left')
-addMessage(new Message('Hi'), 'right')
-addMessage(new Message('lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec odio vitae nunc lacinia'), 'left')
-addMessage(new Message('lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec odio vitae nunc lacinia'), 'right')
+function createElement(parent, tag, className, text = '', attributes = []) {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+
+    attributes.forEach(attr => {
+        element.setAttribute(attr.name, attr.value);
+    });
+
+    parent.appendChild(element);
+    return element;
+}
+
+function addMessage(message, sender = 'me') {
+    const chatMessages = document.querySelector('.chat-messages');
+    const messageContainer = createElement(chatMessages, 'div', `chat-message ${sender === 'me' ? 'right' : 'left'}`);
+    createElement(messageContainer, 'div', 'chat-text', message.getText());
+    createElement(messageContainer, 'div', 'chat-date', message.getFormattedDatetime());
+    scrollToBottom();
+}
+
+function registerBot(chatbot) {
+    BOTS = [...BOTS, chatbot];
+
+    const chatSidebar = document.querySelector('.chat-sidebar');
+    const botContainer = createElement(chatSidebar, 'div', 'chatbot');
+    createElement(botContainer, 'img', 'chatbot-icon', chatbot.icon, [
+        {name: 'alt', value: chatbot.name},
+        {name: 'src', value: `https://robohash.org/${chatbot.name}.png`}
+    ]);
+    createElement(botContainer, 'span', 'chatbot-name', chatbot.name);
+}
+
+// Création de TestBot
+const bot = new Chatbot('TestBot', '🤖')
+
+bot.onResponse((message) => {
+    const msg = new Message(message)
+    addMessage(msg, 'bot')
+})
+
+bot.addCommand('meteo', async () => {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    return 'La météo est ensoleillée avec 20°C.'
+})
+
+bot.addCommand('heure', async () => {
+    const date = new Date()
+    return `Il est actuellement ${date.toLocaleTimeString()} le ${date.toLocaleDateString()}.`
+})
+
+bot.addCommand('blague', async () => {
+    return 'Pourquoi les poissons détestent l’ordinateur ? Parce qu’ils ont peur du net !'
+})
+
+registerBot(bot)
+
+document.querySelector('.chat-input button').addEventListener('click', () => {
+    const input = document.querySelector('.chat-input input')
+    const command = input.value.trim()
+    if (command) {
+        const userMessage = new Message(command)
+        addMessage(userMessage)
+        bot.executeCommand(command)
+        input.value = ''
+    }
+})
+
+document.querySelector('.chat-input input').addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        const input = document.querySelector('.chat-input input')
+        const command = input.value.trim()
+        if (command) {
+            const userMessage = new Message(command)
+            addMessage(userMessage)
+            bot.executeCommand(command)
+            input.value = ''
+        }
+    }
+})
