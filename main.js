@@ -51,7 +51,6 @@ const registerBot = (bot) => {
     const botContainer = createElement(chatSidebar, 'div', 'chatbot')
     createElement(botContainer, 'img', 'chatbot-icon', '', [{ name: 'alt', value: bot.name }, { name: 'src', value: `https://robohash.org/${bot.name}.png` }])
     createElement(botContainer, 'span', 'chatbot-name', bot.name)
-
     botContainer.addEventListener('click', () => renderMessage(createMessage(bot.help(), new Date(), bot.name)))
 }
 
@@ -75,6 +74,13 @@ const renderMessage = (message) => {
     const textContainer = createElement(messageContainer, 'div', 'chat-text-container')
     createElement(textContainer, 'div', 'chat-text', message.text)
     createElement(textContainer, 'div', 'chat-date', message.datetime.toLocaleString())
+
+    textContainer.querySelectorAll('.command-container').forEach(commandContainer => {
+        commandContainer.addEventListener('click', event => {
+            executeCommand(BOTS.find(bot => bot.name === message.sender), event.target.innerText);
+        });
+    });
+
 
     scrollToBottom()
 }
@@ -103,9 +109,18 @@ const handleUserMessage = () => {
             renderMessage(createMessage(bot.help(), new Date(), bot.name))
         })
     } else {
+        let commandExecuted = false
         BOTS.forEach(bot => {
-            executeCommand(bot, command)
+            const hasCommand = bot.getCommands().some(cmd => cmd.command === command)
+            if (hasCommand) {
+                executeCommand(bot, command)
+                commandExecuted = true
+            }
         })
+
+        if (!commandExecuted) {
+            renderMessage(createMessage('Commande inconnue. Tapez help pour obtenir de l\'aide.', new Date(), 'Chatbot'))
+        }
     }
     input.value = ''
 }

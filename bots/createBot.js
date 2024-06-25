@@ -18,7 +18,7 @@ const createBot = (name) => {
             }))
         },
         help() {
-            const commandsList = this.getCommands().map(cmd => `<div><strong>${cmd.command}</strong>: ${cmd.description}</div>`).join('')
+            const commandsList = this.getCommands().map(cmd => `<div><span class="command-container">${cmd.command}</span>: ${cmd.description}</div>`).join('')
             return `Voici la liste des commandes disponibles:<br>${commandsList}`
         },
     }

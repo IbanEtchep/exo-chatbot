@@ -200,3 +200,12 @@ a:hover {
     cursor: pointer;
     gap: 1rem;
 }
+
+.command-container {
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+.command-container:hover {
+    text-decoration: underline;
+}
