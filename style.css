@@ -27,6 +27,8 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
 }
 
 h1 {
@@ -122,6 +124,7 @@ a:hover {
 }
 
 .chat-message {
+    display: flex;
     padding: 1rem;
     position: relative;
 }
@@ -138,17 +141,23 @@ a:hover {
 
 .chat-message.right {
     align-self: flex-end;
+    flex-direction: row-reverse;
+    text-align: right;
 }
 
 .chat-message.right .chat-text {
     color: var(--text-light);
     border-radius: 10px 10px 0 10px;
     background-color: #007bff;
+    width: fit-content;
+    margin-left: auto;
+    text-align: start;
 }
 
 .chat-message.left {
-    color: var(--text-dark);
     align-self: flex-start;
+    flex-direction: row;
+    text-align: left;
 }
 
 .chat-message.left .chat-text {
@@ -177,11 +186,11 @@ a:hover {
     height: 50px;
     border-radius: 50%;
     border: 1px solid #9ca3af;
-    color: var(--text-light);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.5rem;
+    margin-right: 10px;
 }
 
 .chatbot {
