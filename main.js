@@ -2,7 +2,7 @@ import './style.css'
 import createJokeBot from "./bots/JokeBot.js"
 import createWeatherBot from "./bots/WeatherBot.js"
 import createCryptoBot from "./bots/CryptoBot.js"
-import { loadMessageHistory, saveMessageToLocalStorage } from "./localStorageUtils.js"
+import {loadMessageHistory, saveMessageToLocalStorage} from "./localStorageUtils.js"
 
 let BOTS = []
 
@@ -49,7 +49,10 @@ const registerBot = (bot) => {
     BOTS = [...BOTS, bot]
     const chatSidebar = document.querySelector('.chat-sidebar')
     const botContainer = createElement(chatSidebar, 'div', 'chatbot')
-    createElement(botContainer, 'img', 'chatbot-icon', '', [{ name: 'alt', value: bot.name }, { name: 'src', value: `https://robohash.org/${bot.name}.png` }])
+    createElement(botContainer, 'img', 'chatbot-icon', '', [{name: 'alt', value: bot.name}, {
+        name: 'src',
+        value: `https://robohash.org/${bot.name}.png`
+    }])
     createElement(botContainer, 'span', 'chatbot-name', bot.name)
     botContainer.addEventListener('click', () => renderMessage(createMessage(bot.help(), new Date(), bot.name)))
 }
@@ -68,7 +71,10 @@ const renderMessage = (message) => {
     const messageContainer = createElement(chatMessages, 'div', `chat-message ${message.sender === 'me' ? 'right' : 'left'}`)
 
     if (message.sender !== 'me') {
-        createElement(messageContainer, 'img', 'chatbot-icon', '', [{ name: 'alt', value: 'chatbot-icon' }, { name: 'src', value: `https://robohash.org/${message.sender}.png` }])
+        createElement(messageContainer, 'img', 'chatbot-icon', '', [{name: 'alt', value: 'chatbot-icon'}, {
+            name: 'src',
+            value: `https://robohash.org/${message.sender}.png`
+        }])
     }
 
     const textContainer = createElement(messageContainer, 'div', 'chat-text-container')
@@ -91,7 +97,7 @@ const scrollToBottom = () => {
 }
 
 const createMessage = (text, datetime = new Date(), sender = 'me') => {
-    const message = { text, datetime, sender }
+    const message = {text, datetime, sender}
     saveMessageToLocalStorage(message)
     return message
 }

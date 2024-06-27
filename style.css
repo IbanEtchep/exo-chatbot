@@ -209,3 +209,19 @@ a:hover {
 .command-container:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+    .chat-container {
+        flex-direction: column;
+    }
+
+    .chat-sidebar {
+        flex: 0 0 auto;
+        border-right: none;
+        border-bottom: 2px solid #9ca3af0a;
+    }
+
+    .chat-main {
+        flex: 1;
+    }
+}
