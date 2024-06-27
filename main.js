@@ -98,22 +98,23 @@ const createMessage = (text, datetime = new Date(), sender = 'me') => {
 
 const handleUserMessage = () => {
     const input = document.querySelector('.chat-input input')
-    const command = input.value.trim()
+    const message = input.value.trim()
 
-    if (!command) return
+    if (!message) return
 
-    renderMessage(createMessage(command))
+    const command = message.split(' ')[0]
+    const args = message.split(' ').slice(1)
+
+    renderMessage(createMessage(message))
 
     if (command === 'help') {
-        BOTS.forEach(bot => {
-            renderMessage(createMessage(bot.help(), new Date(), bot.name))
-        })
+        BOTS.forEach(bot => renderMessage(createMessage(bot.help(), new Date(), bot.name)))
     } else {
         let commandExecuted = false
         BOTS.forEach(bot => {
             const hasCommand = bot.getCommands().some(cmd => cmd.command === command)
             if (hasCommand) {
-                executeCommand(bot, command)
+                executeCommand(bot, command, args)
                 commandExecuted = true
             }
         })
@@ -125,8 +126,8 @@ const handleUserMessage = () => {
     input.value = ''
 }
 
-const executeCommand = async (bot, command) => {
-    const response = await bot.executeCommand(command)
+const executeCommand = async (bot, command, args = []) => {
+    const response = await bot.executeCommand(command, args)
     if (response) {
         renderMessage(createMessage(response, new Date(), bot.name))
     }

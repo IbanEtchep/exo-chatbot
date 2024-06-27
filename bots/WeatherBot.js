@@ -11,13 +11,33 @@ const getGeolocation = () => {
                     })
                 },
                 error => {
-                    reject('Impossible d\'obtenir la géolocalisation.')
+                    reject(new Error('Impossible d\'obtenir la géolocalisation.'))
                 }
             )
         } else {
-            reject('La géolocalisation n\'est pas supportée par ce navigateur.')
+            reject(new Error('La géolocalisation n\'est pas supportée par ce navigateur.'))
         }
     })
+}
+
+const getCoordinatesFromCity = async (city) => {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`
+
+    try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Erreur lors de la récupération des coordonnées de la ville.')
+
+        const data = await response.json()
+        if (data.length === 0) throw new Error('Ville non trouvée.')
+
+        return {
+            latitude: data[0].lat,
+            longitude: data[0].lon,
+            name: data[0].display_name
+        }
+    } catch (error) {
+        throw new Error('Impossible d\'obtenir les coordonnées de la ville.')
+    }
 }
 
 const getWeatherData = async (latitude, longitude) => {
@@ -68,13 +88,13 @@ const getWeatherDescription = (weathercode) => {
     return weatherConditions[weathercode] || 'Condition météorologique inconnue'
 }
 
-const generateCurrentWeatherReportHtml = (currentWeather) => {
+const generateCurrentWeatherReportHtml = (currentWeather, locationName = 'votre position actuelle') => {
     const { temperature, weathercode, windspeed, winddirection, time } = currentWeather
 
     const date = new Date(time)
     const weatherDescription = getWeatherDescription(weathercode)
 
-    let report = `<h2>Météo actuelle</h2>`
+    let report = `<h2>Météo actuelle à ${locationName}</h2>`
     report += `<strong>Température:</strong> ${temperature} °C <br>`
     report += `<strong>Condition:</strong> ${weatherDescription} <br>`
     report += `<strong>Vitesse du vent:</strong> ${windspeed} km/h <br>`
@@ -85,11 +105,26 @@ const generateCurrentWeatherReportHtml = (currentWeather) => {
 
 const createMeteoBot = () => {
     const bot = createBot('MeteoBot')
-    bot.addCommand('meteo', 'Obtenir la météo actuelle où vous vous trouvez', async () => {
+
+    bot.addCommand('meteo', 'Obtenir la météo actuelle à votre position ou une ville donnée. (ex: meteo Bayonne)', async (args) => {
         try {
-            const { latitude, longitude } = await getGeolocation()
+            let latitude, longitude, locationName
+            if (args.length > 0) {
+                const city = args.join(' ')
+                const coordinates = await getCoordinatesFromCity(city)
+                latitude = coordinates.latitude
+                longitude = coordinates.longitude
+                //add majuscule to first letter
+                locationName = city.charAt(0).toUpperCase() + city.slice(1)
+            } else {
+                const geolocation = await getGeolocation()
+                latitude = geolocation.latitude
+                longitude = geolocation.longitude
+                locationName = 'Votre position actuelle'
+            }
+
             const currentWeather = await getWeatherData(latitude, longitude)
-            return generateCurrentWeatherReportHtml(currentWeather)
+            return generateCurrentWeatherReportHtml(currentWeather, locationName)
         } catch (error) {
             return `<p style="color:red">${error.message}</p>`
         }

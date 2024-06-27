@@ -5,9 +5,9 @@ const createBot = (name) => {
         addCommand(command, description, callback) {
             this.commands[command] = { description, callback }
         },
-        async executeCommand(command) {
+        async executeCommand(command, args = []) {
             if (this.commands[command]) {
-                return await this.commands[command].callback()
+                return await this.commands[command].callback(args)
             }
             return null
         },
