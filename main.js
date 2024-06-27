@@ -19,7 +19,9 @@ const configureUI = () => {
             <div class="chat-sidebar">
                 <div class="chat-header">
                     <h1>Chatbot</h1>
+                    <button class="toggle-sidebar">☰</button>
                 </div>
+                <div class="chatbot-list"></div>
             </div>
             <div class="chat-main">
                 <div class="chat-messages"></div>
@@ -43,11 +45,21 @@ const addEventListeners = () => {
     document.querySelector('.chat-input input').addEventListener('keypress', (event) => {
         if (event.key === 'Enter') handleUserMessage()
     })
+
+    document.querySelector('.toggle-sidebar').addEventListener('click', () => {
+        document.querySelector('.chatbot-list').classList.toggle('d-none');
+    })
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            document.querySelector('.chatbot-list').classList.remove('d-none');
+        }
+    })
 }
 
 const registerBot = (bot) => {
     BOTS = [...BOTS, bot]
-    const chatSidebar = document.querySelector('.chat-sidebar')
+    const chatSidebar = document.querySelector('.chatbot-list')
     const botContainer = createElement(chatSidebar, 'div', 'chatbot')
     createElement(botContainer, 'img', 'chatbot-icon', '', [{name: 'alt', value: bot.name}, {
         name: 'src',
@@ -108,7 +120,7 @@ const handleUserMessage = () => {
 
     if (!message) return
 
-    const command = message.split(' ')[0]
+    const command = message.split(' ')[0].toLowerCase()
     const args = message.split(' ').slice(1)
 
     renderMessage(createMessage(message))

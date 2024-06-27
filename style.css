@@ -175,6 +175,9 @@ a:hover {
 .chat-header {
     padding: 0 20px;
     border-bottom: 2px solid #9ca3af0a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .chat-header h1 {
@@ -210,6 +213,15 @@ a:hover {
     text-decoration: underline;
 }
 
+.toggle-sidebar {
+    display: none;
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
 @media (max-width: 768px) {
     .chat-container {
         flex-direction: column;
@@ -224,4 +236,12 @@ a:hover {
     .chat-main {
         flex: 1;
     }
+
+    .toggle-sidebar {
+        display: block;
+    }
+}
+
+.d-none {
+    display: none;
 }
