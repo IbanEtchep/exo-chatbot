@@ -120,7 +120,6 @@ const createMeteoBot = () => {
                 const geolocation = await getGeolocation()
                 latitude = geolocation.latitude
                 longitude = geolocation.longitude
-                locationName = 'Votre position actuelle'
             }
 
             const currentWeather = await getWeatherData(latitude, longitude)
